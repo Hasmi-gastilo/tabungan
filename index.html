@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTrack - Tabungan Pribadi Modern</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome untuk Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: background 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        body.light {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .dark body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #f9fafb;
+        }
+        
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark .glass-card {
+            background: rgba(31, 41, 55, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Gradient Card untuk Balance */
+        .balance-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .balance-card::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            left: -50%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .balance-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in-up { animation: slideInUp 0.3s ease-out forwards; }
+        @keyframes slideInUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+        /* View Sections */
+        .view-section { display: none !important; }
+        .view-section.active { display: flex !important; animation: fadeIn 0.3s ease-out; }
+        
+        /* Modal */
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Mobile Navigation Bottom */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 40;
+        }
+
+        .dark .bottom-nav {
+            background-color: #1f2937;
+        }
+
+        .bottom-nav.active {
+            display: flex;
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #9ca3af;
+        }
+
+        .bottom-nav-item.active {
+            color: #667eea;
+        }
+
+        .bottom-nav-item i {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .bottom-nav-item span {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Main Content Padding for Mobile */
+        main {
+            padding-bottom: 80px;
+        }
+
+        @media (min-width: 768px) {
+            .bottom-nav {
+                display: none !important;
+            }
+            main {
+                padding-bottom: 0;
+            }
+        }
+
+        /* Responsive Grid */
+        .grid-auto {
+            display: grid;
+            gap: 16px;
+        }
+
+        @media (min-width: 640px) {
+            .grid-auto { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (min-width: 1024px) {
+            .grid-auto { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        /* Card Stats */
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .dark .stat-card {
+            background-color: #111827;
+        }
+
+        /* Hide sidebar on mobile */
+        @media (max-width: 767px) {
+            #sidebar {
+                display: none !important;
+            }
+        }
+
+        /* Auth View Gradient */
+        #auth-view {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased overflow-x-hidden light">
+
+    <!-- LOADING OVERLAY -->
+    <div id="global-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-gray-900 transition-opacity duration-300">
+        <div class="flex flex-col items-center">
+            <i class="fas fa-circle-notch fa-spin text-4xl text-brand-600 mb-4"></i>
+            <p class="text-lg font-medium dark:text-white">Memuat FinTrack...</p>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <!-- AUTHENTICATION VIEW -->
+    <!-- ========================================== -->
+    <div id="auth-view" class="view-section min-h-screen flex flex-col items-center justify-center p-4 w-full">
+        <div class="w-full max-w-sm">
+            <!-- Logo & Title -->
+            <div class="text-center mb-8 animate-fade-in">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white/20 text-white mb-6 backdrop-blur-lg">
+                    <i class="fas fa-wallet text-5xl"></i>
+                </div>
+                <h1 class="text-4xl font-bold text-white mb-2">FinTrack</h1>
+                <p class="text-white/80 text-base">Kelola Keuangan Anda Dengan Mudah</p>
+            </div>
+
+            <!-- Cards Container -->
+            <div class="relative">
+                <!-- Login Form -->
+                <div id="login-form" class="glass-card rounded-3xl p-8 shadow-2xl transform transition-all duration-300">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 text-center">Masuk</h2>
+                    
+                    <form id="login-form-content" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                            <input type="email" id="login-email" required placeholder="nama@email.com" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-purple-500 transition-all">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                            <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-purple-500 transition-all">
+                        </div>
+
+                        <div class="flex items-center justify-between text-sm">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="w-4 h-4 rounded text-purple-600">
+                                <span class="text-gray-600 dark:text-gray-400">Ingat saya</span>
+                            </label>
+                            <a href="#" class="text-purple-600 hover:text-purple-700 font-medium">Lupa?</a>
+                        </div>
+
+                        <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-xl transition-all transform hover:scale-105 shadow-lg mt-6">
+                            Masuk Sekarang
+                        </button>
+                    </form>
+
+                    <div class="relative my-6">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800">atau</span>
+                        </div>
+                    </div>
+
+                    <p class="text-center text-gray-600 dark:text-gray-400">
+                        Belum punya akun? 
+                        <a href="#" onclick="toggleAuthMode()" class="text-purple-600 dark:text-purple-400 font-bold hover:underline">Daftar sekarang</a>
+                    </p>
+                </div>
+
+                <!-- Register Form (Hidden) -->
+                <div id="register-form" class="glass-card rounded-3xl p-8 shadow-2xl hidden transform transition-all duration-300">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 text-center">Daftar</h2>
+                    
+                    <form id="register-form-content" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nama Lengkap</label>
+                            <input type="text" id="reg-name" required placeholder="Nama Anda" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-purple-500 transition-all">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                            <input type="email" id="reg-email" required placeholder="nama@email.com" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-purple-500 transition-all">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                            <input type="password" id="reg-password" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-purple-500 transition-all">
+                        </div>
+
+                        <button type="submit" class="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold py-3 rounded-xl transition-all transform hover:scale-105 shadow-lg mt-6">
+                            Buat Akun
+                        </button>
+                    </form>
+
+                    <p class="text-center text-gray-600 dark:text-gray-400 mt-6">
+                        Sudah punya akun? 
+                        <a href="#" onclick="toggleAuthMode()" class="text-purple-600 dark:text-purple-400 font-bold hover:underline">Masuk</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <p class="text-center text-white/60 text-xs mt-8">© 2026 FinTrack. Kelola keuangan lebih cerdas.</p>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MAIN APP VIEW (Dashboard, dll) -->
+    <!-- ========================================== -->
+    <div id="main-view" class="view-section min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+        
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+            <div class="h-full flex flex-col">
+                <!-- Logo -->
+                <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-700">
+                    <i class="fas fa-wallet text-brand-600 text-2xl mr-3"></i>
+                    <span class="text-xl font-bold dark:text-white">FinTrack</span>
+                </div>
+                
+                <!-- Nav Links -->
+                <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+                    <a href="#" onclick="navigate('dashboard')" class="nav-item active flex items-center px-4 py-3 text-sm font-medium rounded-xl text-brand-600 bg-brand-50 dark:bg-gray-700 dark:text-white mb-1 transition">
+                        <i class="fas fa-home w-6"></i> Dashboard
+                    </a>
+                    <a href="#" onclick="navigate('transactions')" class="nav-item flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 mb-1 transition">
+                        <i class="fas fa-exchange-alt w-6"></i> Transaksi
+                    </a>
+                    <a href="#" onclick="navigate('goals')" class="nav-item flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 mb-1 transition">
+                        <i class="fas fa-bullseye w-6"></i> Target Tabungan
+                    </a>
+                    <a href="#" onclick="navigate('stats')" class="nav-item flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 mb-1 transition">
+                        <i class="fas fa-chart-pie w-6"></i> Statistik
+                    </a>
+                    <a href="#" onclick="navigate('profile')" class="nav-item flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 mb-1 transition">
+                        <i class="fas fa-user-cog w-6"></i> Profil & Pengaturan
+                    </a>
+                </nav>
+
+                <!-- User Mini Profile -->
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center">
+                        <img id="sidebar-avatar" src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" class="w-10 h-10 rounded-full mr-3" alt="Avatar">
+                        <div class="flex-1 min-w-0">
+                            <p id="sidebar-name" class="text-sm font-medium text-gray-900 dark:text-white truncate">User Name</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate cursor-pointer hover:text-red-500" onclick="handleLogout()">Logout</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <div class="flex-1 flex flex-col md:ml-64 min-h-screen transition-all duration-300 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+            
+            <!-- TOP NAVBAR -->
+            <header class="sticky top-0 z-30 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 sm:px-6">
+                <div class="flex items-center">
+                    <button onclick="toggleSidebar()" class="md:hidden text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus:outline-none p-2 mr-2 transition">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h2 id="page-title" class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleDarkMode()" class="text-gray-600 hover:text-purple-600 dark:text-gray-300 dark:hover:text-purple-400 transition bg-gray-100 dark:bg-gray-700 p-2 rounded-lg w-10 h-10 flex items-center justify-center">
+                        <i id="theme-icon" class="fas fa-moon"></i>
+                    </button>
+                    <button onclick="openAddTransactionModal()" class="hidden sm:flex bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-lg items-center gap-2">
+                        <i class="fas fa-plus"></i> Transaksi
+                    </button>
+                </div>
+            </header>
+
+            <!-- CONTENT PAGES -->
+            <main class="flex-1 p-4 sm:p-6 overflow-y-auto w-full max-w-full mx-auto pb-24 md:pb-6">
+                
+                <!-- ================= DASHBOARD PAGE ================= -->
+                <div id="page-dashboard" class="page-section fade-in">
+                    <!-- Balance Card (Large & Prominent) -->
+                    <div class="mb-8">
+                        <div class="balance-card">
+                            <div class="flex justify-between items-start mb-12">
+                                <div>
+                                    <p class="text-white/80 text-sm mb-1">Total Saldo</p>
+                                    <h2 id="dash-total-balance" class="text-4xl font-bold">Rp 0</h2>
+                                </div>
+                                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-wallet text-2xl"></i>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="text-white/70 text-xs">ACCOUNT ID</p>
+                                    <p class="text-white font-mono text-sm">•••• •••• •••• 3669</p>
+                                </div>
+                                <p class="text-white/70 text-xs">FinTrack</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="grid grid-cols-4 gap-3 mb-8">
+                        <button onclick="navigate('transactions')" class="bg-white/90 dark:bg-gray-800 rounded-2xl p-4 text-center hover:shadow-lg transition">
+                            <div class="text-2xl text-purple-600 mb-2"><i class="fas fa-arrow-right-arrow-left"></i></div>
+                            <p class="text-xs font-medium dark:text-white">Transfer</p>
+                        </button>
+                        <button onclick="openAddTransactionModal()" class="bg-white/90 dark:bg-gray-800 rounded-2xl p-4 text-center hover:shadow-lg transition">
+                            <div class="text-2xl text-green-600 mb-2"><i class="fas fa-plus"></i></div>
+                            <p class="text-xs font-medium dark:text-white">Transaksi</p>
+                        </button>
+                        <button class="bg-white/90 dark:bg-gray-800 rounded-2xl p-4 text-center hover:shadow-lg transition">
+                            <div class="text-2xl text-blue-600 mb-2"><i class="fas fa-piggy-bank"></i></div>
+                            <p class="text-xs font-medium dark:text-white">Tabungan</p>
+                        </button>
+                        <button onclick="navigate('stats')" class="bg-white/90 dark:bg-gray-800 rounded-2xl p-4 text-center hover:shadow-lg transition">
+                            <div class="text-2xl text-orange-600 mb-2"><i class="fas fa-chart-pie"></i></div>
+                            <p class="text-xs font-medium dark:text-white">Statistik</p>
+                        </button>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="grid grid-auto gap-3 mb-8">
+                        <!-- Pemasukan -->
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-lg transition">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 dark:text-gray-400 text-xs mb-1">Pemasukan</p>
+                                    <p class="text-2xl font-bold text-green-600 dark:text-green-400" id="dash-total-income">Rp 0</p>
+                                    <p class="text-gray-400 text-xs mt-1">Bulan ini</p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center text-green-600">
+                                    <i class="fas fa-arrow-down"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pengeluaran -->
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-lg transition">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 dark:text-gray-400 text-xs mb-1">Pengeluaran</p>
+                                    <p class="text-2xl font-bold text-red-600 dark:text-red-400" id="dash-total-expense">Rp 0</p>
+                                    <p class="text-gray-400 text-xs mt-1">Bulan ini</p>
+                                </div>
+                                <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center text-red-600">
+                                    <i class="fas fa-arrow-up"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tabungan -->
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-lg transition">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 dark:text-gray-400 text-xs mb-1">Tabungan</p>
+                                    <p class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="dash-total-savings">Rp 0</p>
+                                    <p class="text-gray-400 text-xs mt-1">Total</p>
+                                </div>
+                                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center text-purple-600">
+                                    <i class="fas fa-piggy-bank"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart Section -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-8">
+                        <h3 class="text-lg font-bold mb-4 dark:text-white">Statistik (Bulan Ini)</h3>
+                        <div class="relative h-64 w-full">
+                            <canvas id="cashflowChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recent Transactions -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold dark:text-white">Transaksi Terbaru</h3>
+                            <a href="#" onclick="navigate('transactions')" class="text-sm text-purple-600 hover:underline">Lihat Semua →</a>
+                        </div>
+                        <div id="dash-recent-tx" class="space-y-3">
+                            <!-- Injected by JS -->
+                            <p class="text-sm text-gray-500 text-center py-8">Belum ada transaksi.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= TRANSACTIONS PAGE ================= -->
+                <div id="page-transactions" class="page-section hidden fade-in">
+                    <div class="glass-card rounded-2xl p-6">
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                            <div class="flex gap-2 w-full sm:w-auto">
+                                <input type="text" id="search-tx" placeholder="Cari transaksi..." class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none w-full sm:w-64">
+                                <select id="filter-type-tx" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none">
+                                    <option value="all">Semua</option>
+                                    <option value="income">Pemasukan</option>
+                                    <option value="expense">Pengeluaran</option>
+                                    <option value="saving">Tabungan</option>
+                                </select>
+                            </div>
+                            <button onclick="openAddTransactionModal()" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-lg flex items-center justify-center gap-2">
+                                <i class="fas fa-plus"></i> Tambah
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="text-gray-500 dark:text-gray-400 text-sm border-b border-gray-200 dark:border-gray-700">
+                                        <th class="pb-3 font-medium">Tanggal</th>
+                                        <th class="pb-3 font-medium">Deskripsi & Kategori</th>
+                                        <th class="pb-3 font-medium text-right">Nominal</th>
+                                        <th class="pb-3 font-medium text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tx-table-body" class="text-sm dark:text-gray-200">
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                            <div id="tx-empty-state" class="hidden text-center py-10">
+                                <i class="fas fa-receipt text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+                                <p class="text-gray-500 dark:text-gray-400">Belum ada transaksi ditemukan.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= GOALS PAGE ================= -->
+                <div id="page-goals" class="page-section hidden fade-in">
+                    <div class="flex justify-between items-center mb-6">
+                        <p class="text-gray-600 dark:text-gray-400">Capai impian Anda dengan target tabungan.</p>
+                        <button onclick="openModal('modal-goal')" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-lg flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Buat Target
+                        </button>
+                    </div>
+                    
+                    <div id="goals-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <!-- Injected by JS -->
+                    </div>
+                    
+                    <div id="goals-empty-state" class="hidden text-center py-16 glass-card rounded-2xl">
+                        <i class="fas fa-bullseye text-5xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                        <h3 class="text-lg font-medium dark:text-white mb-2">Belum ada target tabungan</h3>
+                        <p class="text-gray-500 mb-4">Mulai rencanakan masa depan keuangan Anda sekarang.</p>
+                        <button onclick="openModal('modal-goal')" class="text-brand-600 font-medium hover:underline">Buat Target Pertama</button>
+                    </div>
+                </div>
+
+                <!-- ================= STATS PAGE ================= -->
+                <div id="page-stats" class="page-section hidden fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-lg font-semibold mb-4 dark:text-white">Kategori Pengeluaran Terbesar</h3>
+                            <div class="relative h-64 w-full flex justify-center">
+                                <canvas id="expenseCategoryChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-lg font-semibold mb-4 dark:text-white">Tabungan Bulanan</h3>
+                            <div class="relative h-64 w-full flex justify-center">
+                                <canvas id="savingsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= PROFILE PAGE ================= -->
+                <div id="page-profile" class="page-section hidden fade-in">
+                    <div class="max-w-2xl mx-auto glass-card rounded-2xl p-6 md:p-8">
+                        <div class="flex flex-col items-center mb-8">
+                            <div class="relative mb-4">
+                                <img id="profile-page-avatar" src="https://ui-avatars.com/api/?name=User" class="w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover">
+                                <button class="absolute bottom-0 right-0 bg-brand-600 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-brand-700 border-2 border-white dark:border-gray-800">
+                                    <i class="fas fa-camera text-xs"></i>
+                                </button>
+                            </div>
+                            <h3 id="profile-page-name" class="text-xl font-bold dark:text-white">User Name</h3>
+                            <p id="profile-page-email" class="text-gray-500">user@email.com</p>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="text-sm font-semibold text-gray-500 uppercase mb-3">Pengaturan Akun</h4>
+                                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="font-medium dark:text-white">Mode Gelap</p>
+                                            <p class="text-sm text-gray-500">Ubah tampilan menjadi gelap</p>
+                                        </div>
+                                        <button onclick="toggleDarkMode()" class="w-12 h-6 bg-gray-300 dark:bg-brand-600 rounded-full relative transition-colors">
+                                            <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform transform dark:translate-x-6"></span>
+                                        </button>
+                                    </div>
+                                    <hr class="border-gray-200 dark:border-gray-700">
+                                    <button class="w-full text-left text-brand-600 dark:text-brand-400 font-medium hover:underline">Ganti Password</button>
+                                </div>
+                            </div>
+                            
+                            <button onclick="handleLogout()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/40 dark:text-red-400 font-medium py-3 rounded-xl transition border border-red-200 dark:border-red-800">
+                                Keluar Aplikasi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+
+            <!-- BOTTOM NAVIGATION (Mobile) -->
+            <nav class="bottom-nav active md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                <div onclick="navigate('dashboard')" class="bottom-nav-item active" data-nav="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </div>
+                <div onclick="navigate('transactions')" class="bottom-nav-item" data-nav="transactions">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Transaksi</span>
+                </div>
+                <div onclick="navigate('stats')" class="bottom-nav-item" data-nav="stats">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Statistik</span>
+                </div>
+                <div onclick="navigate('goals')" class="bottom-nav-item" data-nav="goals">
+                    <i class="fas fa-bullseye"></i>
+                    <span>Target</span>
+                </div>
+                <div onclick="navigate('profile')" class="bottom-nav-item" data-nav="profile">
+                    <i class="fas fa-user"></i>
+                    <span>Profil</span>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODALS -->
+    <!-- ========================================== -->
+    
+    <!-- Modal Transaksi -->
+    <div id="modal-transaction" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
+        <div class="glass-card w-full max-w-md rounded-2xl shadow-2xl slide-in-right overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
+                <h3 id="modal-transaction-title" class="text-lg font-bold dark:text-white">Tambah Transaksi</h3>
+                <button onclick="closeModal('modal-transaction')" class="text-gray-500 hover:text-gray-700 dark:hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto">
+                <form id="form-transaction" class="space-y-4">
+                    <input type="hidden" id="tx-id">
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Jenis Transaksi</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="tx-type" value="expense" checked class="peer sr-only">
+                                <div class="text-center py-2 rounded-lg border border-gray-300 dark:border-gray-600 peer-checked:bg-red-100 peer-checked:border-red-500 peer-checked:text-red-700 dark:peer-checked:bg-red-900/30 dark:peer-checked:text-red-400 transition text-sm">Pengeluaran</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="tx-type" value="income" class="peer sr-only">
+                                <div class="text-center py-2 rounded-lg border border-gray-300 dark:border-gray-600 peer-checked:bg-green-100 peer-checked:border-green-500 peer-checked:text-green-700 dark:peer-checked:bg-green-900/30 dark:peer-checked:text-green-400 transition text-sm">Pemasukan</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="tx-type" value="saving" class="peer sr-only">
+                                <div class="text-center py-2 rounded-lg border border-gray-300 dark:border-gray-600 peer-checked:bg-purple-100 peer-checked:border-purple-500 peer-checked:text-purple-700 dark:peer-checked:bg-purple-900/30 dark:peer-checked:text-purple-400 transition text-sm">Tabungan</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Nominal (Rp)</label>
+                        <input type="number" id="tx-amount" required min="1" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Kategori</label>
+                        <select id="tx-category" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none">
+                            <option value="makan">Makan</option>
+                            <option value="transportasi">Transportasi</option>
+                            <option value="hiburan">Hiburan</option>
+                            <option value="tagihan">Tagihan</option>
+                            <option value="gaji">Gaji</option>
+                            <option value="freelance">Freelance</option>
+                            <option value="lainnya">Lainnya</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Deskripsi</label>
+                        <input type="text" id="tx-desc" required placeholder="Cth: Makan siang" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Tanggal</label>
+                        <input type="date" id="tx-date" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+
+                    <button type="submit" id="tx-submit-btn" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-2.5 rounded-lg transition mt-4">Simpan Transaksi</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Target Tabungan -->
+    <div id="modal-goal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
+        <div class="glass-card w-full max-w-md rounded-2xl shadow-2xl slide-in-right overflow-hidden">
+            <div class="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-bold dark:text-white">Target Tabungan Baru</h3>
+                <button onclick="closeModal('modal-goal')" class="text-gray-500 hover:text-gray-700 dark:hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-5">
+                <form id="form-goal" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Nama Target</label>
+                        <input type="text" id="goal-title" required placeholder="Cth: Beli Laptop" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Target Nominal (Rp)</label>
+                        <input type="number" id="goal-amount" required min="1000" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-300">URL Gambar (Opsional)</label>
+                        <input type="url" id="goal-image" placeholder="https://..." class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Tenggat Waktu</label>
+                        <input type="date" id="goal-deadline" required class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-2.5 rounded-lg transition mt-4">Buat Target</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { 
+            getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
+            signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, updateProfile
+        } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { 
+            getFirestore, collection, doc, setDoc, onSnapshot, addDoc, deleteDoc, updateDoc
+        } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+        // ==========================================
+        // 1. KONFIGURASI FIREBASE & GLOBAL VARS
+        // ==========================================
+        
+        let firebaseConfig = {
+            apiKey: "AIzaSyDFfyC-2w1SfoIq-Z34aeJR28J1o67B_rw",
+            authDomain: "tabungan-2814b.firebaseapp.com",
+            databaseURL: "https://tabungan-2814b-default-rtdb.firebaseio.com",
+            projectId: "tabungan-2814b",
+            storageBucket: "tabungan-2814b.firebasestorage.app",
+            messagingSenderId: "136598220227",
+            appId: "1:136598220227:web:200c8b4758aee578ce2176",
+            measurementId: "G-LWXYT9NT6Y"
+        };
+        
+        // Deteksi apakah API Key asli sudah diisi atau belum
+        const isMockMode = !firebaseConfig.apiKey || firebaseConfig.apiKey.includes("ISI_API_KEY") || firebaseConfig.apiKey === "fake-key";
+        
+        if (isMockMode) {
+            console.log("INFO: Menjalankan di Mode Demo (In-Memory) karena API Key Firebase belum diisi.");
+            firebaseConfig = { apiKey: "fake-key", projectId: "fake-project" };
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'fintrack-app-v1';
+        
+        // State Management
+        const state = {
+            user: null,
+            transactions: [],
+            goals: [],
+            unsubscribers: []
+        };
+
+        // UI Helpers
+        const formatRupiah = (number) => {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+        };
+        const formatDate = (dateStr) => {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+        };
+
+        window.showToast = (msg, type = 'success') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bg = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-brand-500');
+            toast.className = `${bg} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 slide-in-right text-sm`;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i> <span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+        // ==========================================
+        // 2. AUTHENTICATION LOGIC (RULE 3)
+        // ==========================================
+        let isLoginMode = true;
+        window.toggleAuthMode = () => {
+            isLoginMode = !isLoginMode;
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            
+            if(isLoginMode) {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+            }
+        };
+
+        const triggerLoginSuccess = () => {
+            document.getElementById('sidebar-name').textContent = state.user.displayName || 'User FinTrack';
+            document.getElementById('profile-page-name').textContent = state.user.displayName || 'User FinTrack';
+            document.getElementById('profile-page-email').textContent = state.user.email || 'anonim@fintrack.app';
+            
+            document.getElementById('auth-view').classList.remove('active');
+            document.getElementById('main-view').classList.add('active');
+            window.navigate('dashboard');
+            
+            setupDataListeners(state.user.uid);
+            document.getElementById('tx-date').valueAsDate = new Date();
+        };
+
+        // Cek init token
+        const initAuth = async () => {
+            if (isMockMode) {
+                // Di mode demo, paksa tampilkan halaman login saat pertama kali dimuat
+                document.getElementById('auth-view').classList.add('active');
+                
+                // Hilangkan animasi loading
+                const loader = document.getElementById('global-loader');
+                if(loader) { setTimeout(() => { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 300); }, 500); }
+                return;
+            }
+            
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    // Tangkap error jika token bawaan sistem tidak cocok dengan config Firebase kustom Anda
+                    await signInWithCustomToken(auth, __initial_auth_token).catch(err => {
+                        console.warn("Token default sistem diabaikan karena Anda menggunakan Firebase kustom.");
+                    });
+                }
+            } catch (err) {
+                console.warn("Auth init diabaikan:", err);
+            }
+        };
+
+        // Listen state (Only applies if Real Firebase)
+        onAuthStateChanged(auth, (user) => {
+            if (isMockMode) return; // Mode demo sudah ditangani oleh initAuth()
+            
+            const loader = document.getElementById('global-loader');
+            if (user) {
+                state.user = user;
+                triggerLoginSuccess();
+            } else {
+                state.user = null;
+                state.unsubscribers.forEach(unsub => unsub());
+                state.unsubscribers = [];
+                document.getElementById('auth-view').classList.add('active');
+                document.getElementById('main-view').classList.remove('active');
+            }
+            setTimeout(() => { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 300); }, 500);
+        });
+
+        // Form Submit Listeners
+        document.getElementById('login-form-content').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            
+            if (isMockMode) {
+                state.user = { uid: 'demo-uid', displayName: 'Pengguna Demo', email: email };
+                window.showToast("Berhasil masuk (Mode Demo)");
+                triggerLoginSuccess();
+                return;
+            }
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                window.showToast("Berhasil masuk!");
+            } catch (err) {
+                if (err.code === 'auth/configuration-not-found') {
+                    window.showToast("Fitur Email/Password belum diaktifkan di Firebase Console!", "error");
+                } else {
+                    window.showToast("Login gagal: " + err.message, "error");
+                }
+            }
+        });
+
+        document.getElementById('register-form-content').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-password').value;
+            
+            if (isMockMode) {
+                state.user = { uid: 'demo-uid', displayName: name, email: email };
+                window.showToast("Berhasil daftar (Mode Demo)");
+                triggerLoginSuccess();
+                return;
+            }
+
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                await updateProfile(cred.user, { displayName: name });
+                // Buat doc user
+                await setDoc(doc(db, 'artifacts', appId, 'users', cred.user.uid, 'profile', 'data'), {
+                    name, email, createdAt: Date.now()
+                });
+
+                window.showToast("Akun berhasil dibuat!");
+            } catch (err) {
+                if (err.code === 'auth/configuration-not-found') {
+                    window.showToast("Fitur Email/Password belum diaktifkan di Firebase Console!", "error");
+                } else {
+                    window.showToast("Gagal daftar: " + err.message, "error");
+                }
+            }
+        });
+
+        window.handleLogout = () => {
+            if(isMockMode) {
+                state.user = null;
+                document.getElementById('auth-view').classList.add('active');
+                document.getElementById('main-view').classList.remove('active');
+                return;
+            }
+            signOut(auth);
+        }
+
+        initAuth(); // Jalankan inisialisasi awal
+
+        // ==========================================
+        // 3. DATABASE LISTENER & LOGIC (RULE 1 & 2)
+        // ==========================================
+        function setupDataListeners(uid) {
+            if (isMockMode) {
+                // Di mode demo, kita tidak listen ke Firestore, tapi langsung render state lokal
+                renderTransactions();
+                renderGoals();
+                calculateDashboard();
+                renderCharts();
+                return;
+            }
+
+            const basePath = `artifacts/${appId}/users/${uid}`;
+            
+            // Transactions
+            const unsubTx = onSnapshot(collection(db, `${basePath}/transactions`), snap => {
+                state.transactions = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => b.date - a.date); // Sort in memory (Rule 2)
+                renderTransactions();
+                calculateDashboard();
+                renderCharts();
+            }, err => console.error(err));
+
+            // Goals
+            const unsubGoals = onSnapshot(collection(db, `${basePath}/saving_goals`), snap => {
+                state.goals = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => a.createdAt - b.createdAt);
+                renderGoals();
+                calculateDashboard();
+            }, err => console.error(err));
+
+            state.unsubscribers.push(unsubTx, unsubGoals);
+        }
+
+        // ==========================================
+        // 4. UI RENDERING & DASHBOARD
+        // ==========================================
+        
+        function calculateDashboard() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+
+            let totalIncomeThisMonth = 0;
+            let totalExpenseThisMonth = 0;
+            let totalSavings = 0;
+            
+            // Kalkulasi saldo secara global dari semua transaksi Pemasukan - (Pengeluaran + Tabungan)
+            let globalIncome = 0;
+            let globalExpenseAndSavings = 0;
+            
+            // Hitung Tx
+            state.transactions.forEach(tx => {
+                const txDate = new Date(tx.date);
+                const isCurrentMonth = txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear;
+
+                if (tx.type === 'income') {
+                    globalIncome += Number(tx.amount);
+                    if (isCurrentMonth) totalIncomeThisMonth += Number(tx.amount);
+                } else if (tx.type === 'expense') {
+                    globalExpenseAndSavings += Number(tx.amount);
+                    if (isCurrentMonth) totalExpenseThisMonth += Number(tx.amount);
+                } else if (tx.type === 'saving') {
+                    globalExpenseAndSavings += Number(tx.amount);
+                }
+            });
+
+            const totalBalance = globalIncome - globalExpenseAndSavings;
+
+            // Hitung total tabungan dari goals
+            totalSavings = state.goals.reduce((sum, g) => sum + Number(g.currentAmount || 0), 0);
+
+            // Update DOM
+            document.getElementById('dash-total-balance').textContent = formatRupiah(totalBalance);
+            document.getElementById('dash-total-income').textContent = formatRupiah(totalIncomeThisMonth);
+            document.getElementById('dash-total-expense').textContent = formatRupiah(totalExpenseThisMonth);
+            document.getElementById('dash-total-savings').textContent = formatRupiah(totalSavings);
+
+            // Recent Tx di Dashboard
+            const recentContainer = document.getElementById('dash-recent-tx');
+            const recentTxs = state.transactions.slice(0, 5); // Ambil 5 terbaru
+            if (recentTxs.length === 0) {
+                recentContainer.innerHTML = `<p class="text-sm text-gray-500 text-center py-4">Belum ada transaksi.</p>`;
+            } else {
+                recentContainer.innerHTML = recentTxs.map(tx => {
+                    const isIncome = tx.type === 'income';
+                    const icon = isIncome ? 'fa-arrow-down text-green-500 bg-green-100' : (tx.type === 'saving' ? 'fa-piggy-bank text-purple-500 bg-purple-100' : 'fa-arrow-up text-red-500 bg-red-100');
+                    const sign = isIncome ? '+' : '-';
+                    const color = isIncome ? 'text-green-600' : (tx.type === 'saving' ? 'text-purple-600' : 'text-gray-900 dark:text-white');
+                    
+                    return `
+                    <div class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 ${icon.split(' ').slice(1).join(' ')}">
+                                <i class="fas ${icon.split(' ')[0]}"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium dark:text-white">${tx.description}</p>
+                                <p class="text-xs text-gray-500 capitalize">${tx.category} • ${formatDate(tx.date)}</p>
+                            </div>
+                        </div>
+                        <span class="text-sm font-bold ${color}">${sign}${formatRupiah(tx.amount)}</span>
+                    </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function renderTransactions(filterType = 'all', searchQuery = '') {
+            const tbody = document.getElementById('tx-table-body');
+            const emptyState = document.getElementById('tx-empty-state');
+            
+            let filtered = state.transactions;
+            if (filterType !== 'all') filtered = filtered.filter(t => t.type === filterType);
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                filtered = filtered.filter(t => t.description.toLowerCase().includes(q) || t.category.toLowerCase().includes(q));
+            }
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            tbody.innerHTML = filtered.map(tx => {
+                const isIncome = tx.type === 'income';
+                const sign = isIncome ? '+' : '-';
+                const colorClass = isIncome ? 'text-green-600 dark:text-green-400' : (tx.type === 'saving' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-900 dark:text-gray-100');
+                const badgeColor = tx.type === 'expense' ? 'bg-red-100 text-red-700' : (tx.type === 'income' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700');
+
+                return `
+                <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                    <td class="py-3 pr-2 whitespace-nowrap">${formatDate(tx.date)}</td>
+                    <td class="py-3 px-2">
+                        <p class="font-medium text-gray-800 dark:text-white">${tx.description}</p>
+                        <span class="inline-block px-2 py-0.5 rounded text-xs mt-1 ${badgeColor} capitalize">${tx.category}</span>
+                    </td>
+                    <td class="py-3 px-2 text-right font-semibold ${colorClass}">${sign}${formatRupiah(tx.amount)}</td>
+                    <td class="py-3 pl-2 text-center flex gap-2 justify-center">
+                        <button onclick="editTransaction('${tx.id}')" class="text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteData('transactions', '${tx.id}')" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition" title="Hapus">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        // Search & Filter tx listeners
+        document.getElementById('search-tx').addEventListener('input', (e) => {
+            renderTransactions(document.getElementById('filter-type-tx').value, e.target.value);
+        });
+        document.getElementById('filter-type-tx').addEventListener('change', (e) => {
+            renderTransactions(e.target.value, document.getElementById('search-tx').value);
+        });
+
+        function renderGoals() {
+            const grid = document.getElementById('goals-grid');
+            const empty = document.getElementById('goals-empty-state');
+            
+            if (state.goals.length === 0) {
+                grid.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            grid.innerHTML = state.goals.map(g => {
+                const current = Number(g.currentAmount) || 0;
+                const target = Number(g.targetAmount);
+                const pct = Math.min(100, Math.round((current / target) * 100));
+                const img = g.imageURL || 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&w=400&q=80'; // Fallback
+                
+                return `
+                <div class="glass-card rounded-2xl overflow-hidden group">
+                    <div class="h-32 w-full relative">
+                        <img src="${img}" alt="${g.title}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                        <div class="absolute bottom-3 left-4 right-4 flex justify-between items-end">
+                            <h4 class="text-lg font-bold text-white truncate pr-2">${g.title}</h4>
+                            <button onclick="deleteData('saving_goals', '${g.id}')" class="text-white/70 hover:text-red-400 transition" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-500 dark:text-gray-400">Terkumpul</span>
+                            <span class="font-semibold text-brand-600 dark:text-brand-400">${pct}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-3 overflow-hidden">
+                            <div class="bg-brand-600 h-2.5 rounded-full transition-all duration-1000" style="width: ${pct}%"></div>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="font-bold text-gray-800 dark:text-white">${formatRupiah(current)}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">dari ${formatRupiah(target)}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1"><i class="far fa-calendar-alt"></i> ${formatDate(g.deadline)}</p>
+                                <button onclick="addFundToGoal('${g.id}', '${g.title}')" class="text-xs bg-brand-50 text-brand-600 hover:bg-brand-100 dark:bg-gray-700 dark:text-brand-400 px-3 py-1.5 rounded-lg font-medium transition">
+                                    + Setor
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // Action for adding fund to goal easily
+        window.addFundToGoal = (goalId, title) => {
+            // Pre-fill transaction modal
+            document.querySelector('input[name="tx-type"][value="saving"]').checked = true;
+            document.getElementById('tx-category').value = 'lainnya';
+            document.getElementById('tx-desc').value = `Setor: ${title}`;
+            // Simpan goalId di dataset form untuk di update nanti
+            document.getElementById('form-transaction').dataset.goalId = goalId;
+            openModal('modal-transaction');
+        }
+
+        // ==========================================
+        // 5. CRUD FORMS & OPERATIONS
+        // ==========================================
+        const basePath = () => `artifacts/${appId}/users/${state.user.uid}`;
+
+        // GOAL
+        document.getElementById('form-goal').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!state.user) return;
+
+            const goalData = {
+                title: document.getElementById('goal-title').value,
+                targetAmount: Number(document.getElementById('goal-amount').value),
+                currentAmount: 0,
+                imageURL: document.getElementById('goal-image').value,
+                deadline: new Date(document.getElementById('goal-deadline').value).getTime(),
+                createdAt: Date.now()
+            };
+
+            if(isMockMode) {
+                state.goals.push({ id: Date.now().toString(), ...goalData });
+                closeModal('modal-goal');
+                window.showToast("Target tabungan berhasil dibuat (Demo)!");
+                e.target.reset();
+                setupDataListeners();
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, `${basePath()}/saving_goals`), goalData);
+                closeModal('modal-goal');
+                window.showToast("Target tabungan berhasil dibuat!");
+                e.target.reset();
+            } catch (err) {
+                console.error(err);
+                if (err.message && err.message.toLowerCase().includes('permission')) {
+                    window.showToast("Gagal: Izin ditolak! Pastikan Database Firestore sudah dibuat di mode Test.", "error");
+                } else {
+                    window.showToast("Gagal membuat target: " + err.message, "error");
+                }
+            }
+        });
+
+        // FUNGSI EDIT TRANSAKSI
+        window.editTransaction = (id) => {
+            const tx = state.transactions.find(t => t.id === id);
+            if (!tx) return;
+            
+            // Isi form dengan data lama
+            document.getElementById('tx-id').value = id;
+            document.querySelector(`input[name="tx-type"][value="${tx.type}"]`).checked = true;
+            document.getElementById('tx-amount').value = tx.amount;
+            document.getElementById('tx-category').value = tx.category;
+            document.getElementById('tx-desc').value = tx.description;
+            document.getElementById('tx-date').value = new Date(tx.date).toISOString().split('T')[0];
+            
+            // Ubah judul modal
+            document.getElementById('modal-transaction-title').textContent = 'Edit Transaksi';
+            document.querySelector('#form-transaction button[type="submit"]').textContent = 'Update Transaksi';
+            
+            // Buka modal
+            openModal('modal-transaction');
+        };
+        
+        // FUNGSI BUKA MODAL TAMBAH TRANSAKSI (reset form)
+        window.openAddTransactionModal = () => {
+            document.getElementById('tx-id').value = '';
+            document.getElementById('form-transaction').reset();
+            document.querySelector('input[name="tx-type"][value="expense"]').checked = true;
+            document.getElementById('tx-date').valueAsDate = new Date();
+            document.getElementById('modal-transaction-title').textContent = 'Tambah Transaksi';
+            document.querySelector('#form-transaction button[type="submit"]').textContent = 'Simpan Transaksi';
+            openModal('modal-transaction');
+        };
+
+        // TRANSAKSI
+        document.getElementById('form-transaction').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!state.user) return;
+            
+            const txId = document.getElementById('tx-id').value; // ID jika edit, kosong jika tambah
+            const type = document.querySelector('input[name="tx-type"]:checked').value;
+            const amount = Number(document.getElementById('tx-amount').value);
+            const goalIdToUpdate = e.target.dataset.goalId; // Jika ini tabungan untuk goal tertentu
+
+            const txData = {
+                type,
+                amount,
+                category: document.getElementById('tx-category').value,
+                description: document.getElementById('tx-desc').value,
+                date: new Date(document.getElementById('tx-date').value).getTime(),
+                createdAt: Date.now()
+            };
+
+            if (isMockMode) {
+                if (txId) {
+                    // Edit mode
+                    const idx = state.transactions.findIndex(t => t.id === txId);
+                    if (idx >= 0) {
+                        state.transactions[idx] = { id: txId, ...txData };
+                        window.showToast("Transaksi berhasil diubah (Demo)!");
+                    }
+                } else {
+                    // Add mode
+                    state.transactions.push({ id: Date.now().toString(), ...txData });
+                    if (type === 'saving' && goalIdToUpdate) {
+                        const g = state.goals.find(g => g.id === goalIdToUpdate);
+                        if (g) g.currentAmount += amount;
+                    }
+                    window.showToast("Transaksi berhasil dicatat (Demo)!");
+                }
+                closeModal('modal-transaction');
+                e.target.reset();
+                delete e.target.dataset.goalId;
+                document.getElementById('tx-date').valueAsDate = new Date();
+                setupDataListeners();
+                return;
+            }
+
+            try {
+                if (txId) {
+                    // Edit mode
+                    await updateDoc(doc(db, `${basePath()}/transactions`, txId), txData);
+                    window.showToast("Transaksi berhasil diubah!");
+                } else {
+                    // Add mode
+                    await addDoc(collection(db, `${basePath()}/transactions`), txData);
+                    
+                    // Update Goal jika ada
+                    if (type === 'saving' && goalIdToUpdate) {
+                        const goal = state.goals.find(g => g.id === goalIdToUpdate);
+                        if (goal) {
+                            await updateDoc(doc(db, `${basePath()}/saving_goals`, goalIdToUpdate), { 
+                                currentAmount: (Number(goal.currentAmount) || 0) + amount 
+                            });
+                        }
+                    }
+                    window.showToast("Transaksi berhasil dicatat!");
+                }
+
+                closeModal('modal-transaction');
+                e.target.reset();
+                delete e.target.dataset.goalId; // clear state
+                document.getElementById('tx-date').valueAsDate = new Date(); // reset to today
+
+            } catch (err) {
+                console.error(err);
+                if (err.message && err.message.toLowerCase().includes('permission')) {
+                    window.showToast("Gagal: Izin ditolak! Pastikan Database Firestore sudah dibuat di mode Test.", "error");
+                } else {
+                    window.showToast("Gagal: " + err.message, "error");
+                }
+            }
+        });
+
+        // Delete Global Helper
+        window.deleteData = async (collectionName, id) => {
+            if(confirm("Apakah Anda yakin ingin menghapus data ini?")) {
+                if (isMockMode) {
+                    if (collectionName === 'transactions') state.transactions = state.transactions.filter(x => x.id !== id);
+                    if (collectionName === 'saving_goals') state.goals = state.goals.filter(x => x.id !== id);
+                    setupDataListeners();
+                    window.showToast("Data berhasil dihapus (Demo)");
+                    return;
+                }
+                
+                try {
+                    await deleteDoc(doc(db, `${basePath()}/${collectionName}`, id));
+                    window.showToast("Data berhasil dihapus");
+                } catch(err) {
+                    console.error(err);
+                    if (err.message && err.message.toLowerCase().includes('permission')) {
+                        window.showToast("Gagal: Izin ditolak! Cek Rules Database Anda.", "error");
+                    } else {
+                        window.showToast("Gagal menghapus data: " + err.message, "error");
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // 6. CHART.JS INTEGRATION
+        // ==========================================
+        let cashflowChartIns, expenseChartIns, savingsChartIns;
+
+        function renderCharts() {
+            // Harus render saat tab active, tp panggil update agar data tersinkron
+            if(document.getElementById('page-dashboard').classList.contains('active')) {
+                drawCashflowChart();
+            }
+            if(document.getElementById('page-stats').classList.contains('active')) {
+                drawStatsCharts();
+            }
+        }
+
+        function drawCashflowChart() {
+            const ctx = document.getElementById('cashflowChart');
+            if(!ctx) return;
+            if(cashflowChartIns) cashflowChartIns.destroy();
+
+            // Setup Last 6 Months data
+            const months = [];
+            const incomes = [0,0,0,0,0,0];
+            const expenses = [0,0,0,0,0,0];
+            
+            for(let i=5; i>=0; i--) {
+                const d = new Date();
+                d.setMonth(d.getMonth() - i);
+                months.push(d.toLocaleString('id-ID', { month: 'short' }));
+            }
+
+            const now = new Date();
+            state.transactions.forEach(tx => {
+                const d = new Date(tx.date);
+                const monthDiff = (now.getFullYear() - d.getFullYear()) * 12 + now.getMonth() - d.getMonth();
+                if(monthDiff >= 0 && monthDiff < 6) {
+                    const idx = 5 - monthDiff;
+                    if(tx.type === 'income') incomes[idx] += Number(tx.amount);
+                    if(tx.type === 'expense') expenses[idx] += Number(tx.amount);
+                }
+            });
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#9ca3af' : '#4b5563';
+
+            cashflowChartIns = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [
+                        { label: 'Pemasukan', data: incomes, backgroundColor: '#10b981', borderRadius: 4 },
+                        { label: 'Pengeluaran', data: expenses, backgroundColor: '#ef4444', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        y: { ticks: { color: textColor }, grid: { color: isDark ? '#374151' : '#e5e7eb' } },
+                        x: { ticks: { color: textColor }, grid: { display: false } }
+                    },
+                    plugins: { legend: { labels: { color: textColor } } }
+                }
+            });
+        }
+
+        function drawStatsCharts() {
+            // 1. Expense Category Doughnut
+            const ctxCat = document.getElementById('expenseCategoryChart');
+            if(expenseChartIns) expenseChartIns.destroy();
+
+            const catData = {};
+            state.transactions.filter(t => t.type === 'expense').forEach(t => {
+                catData[t.category] = (catData[t.category] || 0) + Number(t.amount);
+            });
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#9ca3af' : '#4b5563';
+
+            expenseChartIns = new Chart(ctxCat, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(catData).map(k => k.charAt(0).toUpperCase() + k.slice(1)),
+                    datasets: [{
+                        data: Object.values(catData),
+                        backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { color: textColor } } },
+                    cutout: '70%'
+                }
+            });
+
+            // 2. Savings Line Chart (Simulated history based on current goals for visual demo)
+            const ctxSav = document.getElementById('savingsChart');
+            if(savingsChartIns) savingsChartIns.destroy();
+
+            savingsChartIns = new Chart(ctxSav, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                    datasets: [{
+                        label: 'Pertumbuhan Tabungan',
+                        data: [0, 1000000, 1500000, 3000000, 4500000, state.goals.reduce((a,b)=>a+Number(b.currentAmount),0)], // Demo data leading to actual
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true, tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        y: { ticks: { color: textColor }, grid: { color: isDark ? '#374151' : '#e5e7eb' } },
+                        x: { ticks: { color: textColor }, grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // ==========================================
+        // 7. UI INTERACTIONS & NAVIGATION
+        // ==========================================
+        
+        window.navigate = (page) => {
+            // Hide all pages
+            document.querySelectorAll('.page-section').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('active');
+            });
+            // Show target
+            const target = document.getElementById(`page-${page}`);
+            if(target) {
+                target.classList.remove('hidden');
+                target.classList.add('active'); // trigger animation
+            }
+            
+            // Update Title
+            const titles = {
+                'dashboard': 'Dashboard', 
+                'transactions': 'Data Transaksi', 
+                'goals': 'Target Tabungan',
+                'stats': 'Statistik Keuangan', 
+                'profile': 'Profil'
+            };
+            document.getElementById('page-title').textContent = titles[page];
+
+            // Update Nav styling (Sidebar)
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('text-brand-600', 'bg-brand-50', 'dark:bg-gray-700', 'dark:text-white', 'active');
+                el.classList.add('text-gray-600', 'hover:bg-gray-100', 'dark:text-gray-300', 'dark:hover:bg-gray-700');
+            });
+            const activeNav = document.querySelector(`.nav-item[onclick="navigate('${page}')"]`);
+            if(activeNav) {
+                activeNav.classList.remove('text-gray-600', 'hover:bg-gray-100', 'dark:text-gray-300', 'dark:hover:bg-gray-700');
+                activeNav.classList.add('text-brand-600', 'bg-brand-50', 'dark:bg-gray-700', 'dark:text-white', 'active');
+            }
+
+            // Update Bottom Nav (Mobile)
+            document.querySelectorAll('.bottom-nav-item').forEach(el => {
+                el.classList.remove('active', 'text-purple-600', 'text-purple-500');
+                el.classList.add('text-gray-500');
+            });
+            const activeBottomNav = document.querySelector(`.bottom-nav-item[data-nav="${page}"]`);
+            if(activeBottomNav) {
+                activeBottomNav.classList.remove('text-gray-500');
+                activeBottomNav.classList.add('active', 'text-purple-600');
+            }
+
+            // Close sidebar on mobile
+            if(window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar');
+                if(sidebar) sidebar.classList.add('-translate-x-full');
+            }
+
+            // Trigger chart renders if needed
+            if(page === 'dashboard') setTimeout(drawCashflowChart, 100);
+            if(page === 'stats') setTimeout(drawStatsCharts, 100);
+
+            // Auto close sidebar on mobile
+            if(window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+            }
+        };
+
+        window.toggleSidebar = () => {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        };
+
+        window.openModal = (id) => {
+            document.getElementById(id).classList.remove('hidden');
+        };
+        window.closeModal = (id) => {
+            document.getElementById(id).classList.add('hidden');
+        };
+
+        window.toggleDarkMode = () => {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            
+            const icon = document.getElementById('theme-icon');
+            icon.className = isDark ? 'fas fa-sun text-yellow-400' : 'fas fa-moon';
+            
+            // Re-render charts for theme update
+            renderCharts();
+        };
+
+        // Close modal on outside click
+        document.querySelectorAll('.modal-backdrop').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if(e.target === modal) modal.classList.add('hidden');
+            });
+        });
+
+    </script>
+</body>
+</html>
