@@ -146,17 +146,23 @@
         /* Mobile Navigation Bottom */
         .bottom-nav {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             display: none;
             z-index: 40;
+            padding: 4px;
         }
 
         .dark .bottom-nav {
-            background-color: #1f2937;
+            background-color: rgba(31, 41, 55, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         .bottom-nav.active {
@@ -169,29 +175,41 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 12px 0;
+            padding: 10px 0;
             cursor: pointer;
             transition: all 0.3s ease;
             color: #9ca3af;
+            border-radius: 20px;
         }
 
         .bottom-nav-item.active {
             color: #667eea;
+            background-color: #eff6ff;
+        }
+
+        .dark .bottom-nav-item.active {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
         }
 
         .bottom-nav-item i {
-            font-size: 20px;
-            margin-bottom: 4px;
+            font-size: 18px;
+            margin-bottom: 2px;
+            transition: transform 0.3s ease;
+        }
+        
+        .bottom-nav-item.active i {
+            transform: translateY(-2px);
         }
 
         .bottom-nav-item span {
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 10px;
+            font-weight: 600;
         }
 
         /* Main Content Padding for Mobile */
         main {
-            padding-bottom: 80px;
+            padding-bottom: 100px;
         }
 
         @media (min-width: 768px) {
@@ -355,6 +373,9 @@
     <!-- ========================================== -->
     <div id="main-view" class="view-section min-h-screen bg-gray-50 dark:bg-gray-900 flex">
         
+        <!-- SIDEBAR OVERLAY -->
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+        
         <!-- SIDEBAR -->
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
             <div class="h-full flex flex-col">
@@ -427,8 +448,11 @@
                         <div class="balance-card">
                             <div class="flex justify-between items-start mb-12">
                                 <div>
-                                    <p class="text-white/80 text-sm mb-1">Total Saldo</p>
-                                    <h2 id="dash-total-balance" class="text-4xl font-bold">Rp 0</h2>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <p class="text-white/80 text-sm">Total Saldo</p>
+                                        <button id="toggle-balance" class="text-white/60 hover:text-white transition"><i class="fas fa-eye"></i></button>
+                                    </div>
+                                    <h2 id="dash-total-balance" class="text-4xl font-bold transition-all duration-300">Rp 0</h2>
                                 </div>
                                 <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                                     <i class="fas fa-wallet text-2xl"></i>
@@ -548,24 +572,12 @@
                             </button>
                         </div>
                         
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="text-gray-500 dark:text-gray-400 text-sm border-b border-gray-200 dark:border-gray-700">
-                                        <th class="pb-3 font-medium">Tanggal</th>
-                                        <th class="pb-3 font-medium">Deskripsi & Kategori</th>
-                                        <th class="pb-3 font-medium text-right">Nominal</th>
-                                        <th class="pb-3 font-medium text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tx-table-body" class="text-sm dark:text-gray-200">
-                                    <!-- Injected by JS -->
-                                </tbody>
-                            </table>
-                            <div id="tx-empty-state" class="hidden text-center py-10">
-                                <i class="fas fa-receipt text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
-                                <p class="text-gray-500 dark:text-gray-400">Belum ada transaksi ditemukan.</p>
-                            </div>
+                        <div id="tx-list-container" class="space-y-3">
+                            <!-- Cards injected by JS -->
+                        </div>
+                        <div id="tx-empty-state" class="hidden text-center py-10">
+                            <i class="fas fa-receipt text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+                            <p class="text-gray-500 dark:text-gray-400">Belum ada transaksi ditemukan.</p>
                         </div>
                     </div>
                 </div>
@@ -637,7 +649,7 @@
                                         </button>
                                     </div>
                                     <hr class="border-gray-200 dark:border-gray-700">
-                                    <button class="w-full text-left text-brand-600 dark:text-brand-400 font-medium hover:underline">Ganti Password</button>
+                                    <button onclick="changePassword()" class="w-full text-left text-brand-600 dark:text-brand-400 font-medium hover:underline">Ganti Password</button>
                                 </div>
                             </div>
                             
@@ -783,7 +795,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { 
             getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-            signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, updateProfile
+            signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, updateProfile, updatePassword
         } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { 
             getFirestore, collection, doc, setDoc, onSnapshot, addDoc, deleteDoc, updateDoc
@@ -1008,6 +1020,44 @@
             }
             signOut(auth);
         }
+        
+        window.changePassword = async () => {
+            if(isMockMode) {
+                const newPass = prompt("Masukkan password baru:");
+                if(newPass) window.showToast("Password berhasil diubah (Mode Demo)!");
+                return;
+            }
+            if(!state.user) return;
+            
+            const newPass = prompt("Masukkan password baru (minimal 6 karakter):");
+            if(!newPass) return;
+            
+            try {
+                await updatePassword(state.user, newPass);
+                window.showToast("Password berhasil diubah!");
+            } catch(err) {
+                if(err.code === 'auth/requires-recent-login') {
+                    window.showToast("Gagal: Anda harus logout dan login kembali untuk mengubah password.", "error");
+                } else {
+                    window.showToast("Gagal mengubah password: " + err.message, "error");
+                }
+            }
+        };
+
+        // Balance Visibility Toggle
+        let isBalanceVisible = true;
+        let lastTotalBalance = 0;
+        document.getElementById('toggle-balance').addEventListener('click', (e) => {
+            isBalanceVisible = !isBalanceVisible;
+            const icon = e.currentTarget.querySelector('i');
+            if(isBalanceVisible) {
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                document.getElementById('dash-total-balance').textContent = formatRupiah(lastTotalBalance);
+            } else {
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                document.getElementById('dash-total-balance').textContent = 'Rp •••••••';
+            }
+        });
 
         initAuth(); // Jalankan inisialisasi awal
 
@@ -1083,7 +1133,12 @@
             totalSavings = state.goals.reduce((sum, g) => sum + Number(g.currentAmount || 0), 0);
 
             // Update DOM
-            document.getElementById('dash-total-balance').textContent = formatRupiah(totalBalance);
+            lastTotalBalance = totalBalance;
+            if(isBalanceVisible) {
+                document.getElementById('dash-total-balance').textContent = formatRupiah(totalBalance);
+            } else {
+                document.getElementById('dash-total-balance').textContent = 'Rp •••••••';
+            }
             document.getElementById('dash-total-income').textContent = formatRupiah(totalIncomeThisMonth);
             document.getElementById('dash-total-expense').textContent = formatRupiah(totalExpenseThisMonth);
             document.getElementById('dash-total-savings').textContent = formatRupiah(totalSavings);
@@ -1119,7 +1174,7 @@
         }
 
         function renderTransactions(filterType = 'all', searchQuery = '') {
-            const tbody = document.getElementById('tx-table-body');
+            const container = document.getElementById('tx-list-container');
             const emptyState = document.getElementById('tx-empty-state');
             
             let filtered = state.transactions;
@@ -1130,35 +1185,41 @@
             }
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '';
+                container.innerHTML = '';
                 emptyState.classList.remove('hidden');
                 return;
             }
             emptyState.classList.add('hidden');
 
-            tbody.innerHTML = filtered.map(tx => {
+            container.innerHTML = filtered.map(tx => {
                 const isIncome = tx.type === 'income';
                 const sign = isIncome ? '+' : '-';
-                const colorClass = isIncome ? 'text-green-600 dark:text-green-400' : (tx.type === 'saving' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-900 dark:text-gray-100');
-                const badgeColor = tx.type === 'expense' ? 'bg-red-100 text-red-700' : (tx.type === 'income' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700');
+                const icon = isIncome ? 'fa-arrow-down text-green-500 bg-green-100' : (tx.type === 'saving' ? 'fa-piggy-bank text-purple-500 bg-purple-100' : 'fa-arrow-up text-red-500 bg-red-100');
+                const color = isIncome ? 'text-green-600' : (tx.type === 'saving' ? 'text-purple-600' : 'text-gray-900 dark:text-white');
 
                 return `
-                <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                    <td class="py-3 pr-2 whitespace-nowrap">${formatDate(tx.date)}</td>
-                    <td class="py-3 px-2">
-                        <p class="font-medium text-gray-800 dark:text-white">${tx.description}</p>
-                        <span class="inline-block px-2 py-0.5 rounded text-xs mt-1 ${badgeColor} capitalize">${tx.category}</span>
-                    </td>
-                    <td class="py-3 px-2 text-right font-semibold ${colorClass}">${sign}${formatRupiah(tx.amount)}</td>
-                    <td class="py-3 pl-2 text-center flex gap-2 justify-center">
-                        <button onclick="editTransaction('${tx.id}')" class="text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="deleteData('transactions', '${tx.id}')" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition" title="Hapus">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </td>
-                </tr>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:shadow-md rounded-2xl transition gap-4 mb-3">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4 ${icon.split(' ').slice(1).join(' ')}">
+                            <i class="fas ${icon.split(' ')[0]} text-lg"></i>
+                        </div>
+                        <div>
+                            <p class="text-base font-bold dark:text-white">${tx.description}</p>
+                            <p class="text-sm text-gray-500 capitalize">${tx.category} • ${formatDate(tx.date)}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
+                        <span class="text-lg font-bold ${color}">${sign}${formatRupiah(tx.amount)}</span>
+                        <div class="flex gap-2">
+                            <button onclick="editTransaction('${tx.id}')" class="w-8 h-8 flex items-center justify-center text-blue-500 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteData('transactions', '${tx.id}')" class="w-8 h-8 flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition" title="Hapus">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 `;
             }).join('');
         }
@@ -1591,21 +1652,25 @@
             // Close sidebar on mobile
             if(window.innerWidth < 768) {
                 const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
                 if(sidebar) sidebar.classList.add('-translate-x-full');
+                if(overlay) overlay.classList.add('hidden');
             }
 
             // Trigger chart renders if needed
             if(page === 'dashboard') setTimeout(drawCashflowChart, 100);
             if(page === 'stats') setTimeout(drawStatsCharts, 100);
-
-            // Auto close sidebar on mobile
-            if(window.innerWidth < 768) {
-                document.getElementById('sidebar').classList.add('-translate-x-full');
-            }
         };
 
         window.toggleSidebar = () => {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            if(sidebar.classList.contains('-translate-x-full')) {
+                overlay.classList.add('hidden');
+            } else {
+                overlay.classList.remove('hidden');
+            }
         };
 
         window.openModal = (id) => {
