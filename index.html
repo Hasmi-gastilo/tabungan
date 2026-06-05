@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinTrack - Tabungan Pribadi Modern</title>
+    <title>Tabungan Pribadi Modern</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -247,13 +247,6 @@
             background-color: #111827;
         }
 
-        /* Hide sidebar on mobile */
-        @media (max-width: 767px) {
-            #sidebar {
-                display: none !important;
-            }
-        }
-
         /* Auth View Gradient */
         #auth-view {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
@@ -279,92 +272,127 @@
 
     <!-- AUTHENTICATION VIEW -->
     <!-- ========================================== -->
-    <div id="auth-view" class="view-section min-h-screen flex flex-col items-center justify-center p-4 w-full">
-        <div class="w-full max-w-sm bg-white dark:bg-gray-800 rounded-[2rem] shadow-2xl overflow-hidden relative">
-            <!-- Top Section (Gradient + Shapes) -->
-            <div class="h-40 bg-gradient-to-r from-brand-500 to-purple-600 relative overflow-hidden flex flex-col items-center justify-center">
-                <!-- Shapes -->
-                <div class="absolute -top-12 -left-8 w-40 h-40 bg-pink-400 rounded-full mix-blend-overlay filter blur-sm opacity-80"></div>
-                <div class="absolute -bottom-10 -right-8 w-32 h-32 bg-indigo-300 rounded-full mix-blend-overlay filter blur-sm opacity-80"></div>
-                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-black opacity-10"></div>
-                
-                <h1 class="text-3xl font-bold text-white z-10 text-center px-4 pt-4 tracking-tight" id="auth-title">Create an account</h1>
+    <div id="auth-view" class="view-section min-h-screen flex flex-col items-center justify-center p-4 w-full bg-gray-50 dark:bg-gray-900">
+        <div class="w-full max-w-sm bg-[#8a3ab9] rounded-[2.5rem] shadow-2xl overflow-hidden relative min-h-[650px] flex flex-col pt-12 pb-8">
+            <!-- Background Waves -->
+            <div class="absolute bottom-0 left-0 w-full pointer-events-none z-0">
+                <svg viewBox="0 0 1440 320" class="w-full h-auto opacity-30">
+                    <path fill="#ffffff" d="M0,256L48,229.3C96,203,192,149,288,154.7C384,160,480,224,576,218.7C672,213,768,139,864,128C960,117,1056,171,1152,197.3C1248,224,1344,224,1392,224L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                </svg>
+            </div>
+            <div class="absolute bottom-0 left-0 w-full pointer-events-none z-0">
+                <svg viewBox="0 0 1440 320" class="w-full h-auto transform translate-y-1">
+                    <path fill="#ffffff" d="M0,288L48,272C96,256,192,224,288,197.3C384,171,480,149,576,165.3C672,181,768,235,864,250.7C960,267,1056,245,1152,250.7C1248,256,1344,288,1392,304L1440,320L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                </svg>
             </div>
 
-            <!-- Form Section -->
-            <div class="bg-white dark:bg-gray-800 rounded-t-[2rem] -mt-6 relative z-10 px-8 pt-8 pb-8">
+            <!-- Login Form -->
+            <form id="login-form-content" class="relative z-10 flex-1 flex flex-col w-full px-8">
+                <div class="mb-10 text-center mt-6">
+                    <h1 class="text-4xl font-extrabold text-white tracking-[0.1em] uppercase">Login</h1>
+                    <p class="text-white/80 text-[10px] tracking-[0.2em] mt-1 uppercase font-semibold">To Continue</p>
+                </div>
                 
-                <!-- Register Form -->
-                <form id="register-form-content" class="space-y-4">
-                    <button type="button" class="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full py-3 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow-sm">
-                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-                        <span class="text-sm">Sign in with Google</span>
+                <div class="space-y-4">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/70">
+                            <i class="far fa-envelope"></i>
+                        </div>
+                        <input type="email" id="login-email" required placeholder="someone@gmail.com" class="w-full bg-white/10 border border-white/20 rounded-2xl py-3.5 pl-11 pr-4 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all text-sm">
+                    </div>
+                    
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/70">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <input type="password" id="login-password" required placeholder="••••••••••••" class="w-full bg-white/10 border border-white/20 rounded-2xl py-3.5 pl-11 pr-11 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all text-sm">
+                        <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-white/70 hover:text-white transition-colors toggle-password" data-target="login-password">
+                            <i class="far fa-eye"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="text-right">
+                        <a href="#" class="text-white/80 text-xs hover:text-white transition-colors">Lupa password?</a>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-white text-[#8a3ab9] font-bold rounded-2xl py-3.5 mt-6 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all uppercase tracking-wider text-sm">
+                        Login
                     </button>
                     
-                    <div class="relative flex items-center py-2">
-                        <div class="flex-grow border-t border-gray-100 dark:border-gray-700"></div>
-                        <span class="flex-shrink-0 mx-4 text-gray-400 text-xs lowercase">or</span>
-                        <div class="flex-grow border-t border-gray-100 dark:border-gray-700"></div>
+                    <div class="flex items-center my-6">
+                        <div class="flex-grow border-t border-white/20"></div>
+                        <span class="mx-4 text-white/60 text-xs">atau</span>
+                        <div class="flex-grow border-t border-white/20"></div>
                     </div>
+                    
+                    <button type="button" onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-3 bg-white/10 border border-white/20 rounded-2xl py-3.5 text-white font-medium hover:bg-white/20 transition-all shadow-sm">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                        <span class="text-sm">Masuk dengan Google</span>
+                    </button>
+                    
+                    <p class="text-center text-sm text-white/80 mt-8 pb-4">
+                        Belum punya akun? <a href="#" onclick="toggleAuthMode()" class="text-white font-bold hover:underline">Daftar</a>
+                    </p>
+                </div>
+            </form>
 
+            <!-- Register Form -->
+            <form id="register-form-content" class="relative z-10 flex-1 flex flex-col w-full px-8 hidden">
+                <div class="mb-8 text-center mt-6">
+                    <h1 class="text-4xl font-extrabold text-white tracking-[0.1em] uppercase">Daftar</h1>
+                    <p class="text-white/80 text-[10px] tracking-[0.2em] mt-1 uppercase font-semibold">To Join Us</p>
+                </div>
+                
+                <div class="space-y-4">
                     <div class="flex gap-3">
-                        <input type="text" id="reg-name" required placeholder="First Name" class="w-1/2 bg-gray-50 dark:bg-gray-700 border-none rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none dark:text-white transition-all text-gray-800">
-                        <input type="text" id="reg-lastname" required placeholder="Last Name" class="w-1/2 bg-gray-50 dark:bg-gray-700 border-none rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none dark:text-white transition-all text-gray-800">
+                        <div class="relative w-1/2">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white/70">
+                                <i class="far fa-user"></i>
+                            </div>
+                            <input type="text" id="reg-name" required placeholder="Nama Depan" class="w-full bg-white/10 border border-white/20 rounded-2xl py-3.5 pl-9 pr-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all text-xs">
+                        </div>
+                        <div class="relative w-1/2">
+                            <input type="text" id="reg-lastname" required placeholder="Nama Belakang" class="w-full bg-white/10 border border-white/20 rounded-2xl py-3.5 px-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all text-xs">
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/70">
+                            <i class="far fa-envelope"></i>
+                        </div>
+                        <input type="email" id="reg-email" required placeholder="someone@gmail.com" class="w-full bg-white/10 border border-white/20 rounded-2xl py-3.5 pl-11 pr-4 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all text-sm">
                     </div>
                     
-                    <input type="email" id="reg-email" required placeholder="Email" class="w-full bg-gray-50 dark:bg-gray-700 border-none rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none dark:text-white transition-all text-gray-800">
-                    
                     <div class="relative">
-                        <input type="password" id="reg-password" required placeholder="Password" class="w-full bg-gray-50 dark:bg-gray-700 border-none rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none dark:text-white pr-10 transition-all text-gray-800">
-                        <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 toggle-password" data-target="reg-password">
-                            <i class="fas fa-eye"></i>
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/70">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <input type="password" id="reg-password" required placeholder="••••••••••••" class="w-full bg-white/10 border border-white/20 rounded-2xl py-3.5 pl-11 pr-11 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all text-sm">
+                        <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-white/70 hover:text-white transition-colors toggle-password" data-target="reg-password">
+                            <i class="far fa-eye"></i>
                         </button>
                     </div>
                     
-                    <button type="submit" class="w-full bg-gray-900 dark:bg-brand-600 text-white font-bold rounded-full py-3.5 mt-2 hover:shadow-lg transition transform hover:-translate-y-0.5 text-sm">
-                        Create account
+                    <button type="submit" class="w-full bg-white text-[#8a3ab9] font-bold rounded-2xl py-3.5 mt-4 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all uppercase tracking-wider text-sm">
+                        Daftar
                     </button>
-
-                    <p class="text-[11px] text-gray-500 text-center mt-4 leading-relaxed">
-                        Signing up for a FinTrack account means you<br>agree to the <a href="#" class="font-semibold underline text-gray-700 dark:text-gray-300">Privacy Policy</a> and <a href="#" class="font-semibold underline text-gray-700 dark:text-gray-300">Terms of Service</a>.
-                    </p>
-
-                    <p class="text-sm text-center text-gray-600 dark:text-gray-400 mt-6 font-medium">
-                        Have an account? <a href="#" onclick="toggleAuthMode()" class="text-gray-900 dark:text-white underline cursor-pointer">Log in here</a>
-                    </p>
-                </form>
-
-                <!-- Login Form -->
-                <form id="login-form-content" class="space-y-4 hidden">
-                    <button type="button" class="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full py-3 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow-sm">
+                    
+                    <div class="flex items-center my-6">
+                        <div class="flex-grow border-t border-white/20"></div>
+                        <span class="mx-4 text-white/60 text-xs">atau</span>
+                        <div class="flex-grow border-t border-white/20"></div>
+                    </div>
+                    
+                    <button type="button" onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-3 bg-white/10 border border-white/20 rounded-2xl py-3.5 text-white font-medium hover:bg-white/20 transition-all shadow-sm">
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-                        <span class="text-sm">Sign in with Google</span>
+                        <span class="text-sm">Masuk dengan Google</span>
                     </button>
                     
-                    <div class="relative flex items-center py-2">
-                        <div class="flex-grow border-t border-gray-100 dark:border-gray-700"></div>
-                        <span class="flex-shrink-0 mx-4 text-gray-400 text-xs lowercase">or</span>
-                        <div class="flex-grow border-t border-gray-100 dark:border-gray-700"></div>
-                    </div>
-
-                    <input type="email" id="login-email" required placeholder="Email" class="w-full bg-gray-50 dark:bg-gray-700 border-none rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none dark:text-white transition-all text-gray-800">
-                    
-                    <div class="relative">
-                        <input type="password" id="login-password" required placeholder="Password" class="w-full bg-gray-50 dark:bg-gray-700 border-none rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none dark:text-white pr-10 transition-all text-gray-800">
-                        <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 toggle-password" data-target="login-password">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    
-                    <button type="submit" class="w-full bg-gray-900 dark:bg-brand-600 text-white font-bold rounded-full py-3.5 mt-2 hover:shadow-lg transition transform hover:-translate-y-0.5 text-sm">
-                        Sign in
-                    </button>
-
-                    <p class="text-sm text-center text-gray-600 dark:text-gray-400 mt-6 font-medium">
-                        Don't have an account? <a href="#" onclick="toggleAuthMode()" class="text-gray-900 dark:text-white underline cursor-pointer">Create account</a>
+                    <p class="text-center text-sm text-white/80 mt-6 pb-4">
+                        Sudah punya akun? <a href="#" onclick="toggleAuthMode()" class="text-white font-bold hover:underline">Login</a>
                     </p>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -795,7 +823,8 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { 
             getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-            signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, updateProfile, updatePassword
+            signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, updateProfile, updatePassword,
+            GoogleAuthProvider, signInWithPopup
         } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { 
             getFirestore, collection, doc, setDoc, onSnapshot, addDoc, deleteDoc, updateDoc
@@ -864,21 +893,18 @@
         // ==========================================
         // 2. AUTHENTICATION LOGIC (RULE 3)
         // ==========================================
-        let isLoginMode = false;
+        let isLoginMode = true;
         window.toggleAuthMode = () => {
             isLoginMode = !isLoginMode;
             const loginForm = document.getElementById('login-form-content');
             const registerForm = document.getElementById('register-form-content');
-            const authTitle = document.getElementById('auth-title');
             
             if(isLoginMode) {
                 loginForm.classList.remove('hidden');
                 registerForm.classList.add('hidden');
-                if(authTitle) authTitle.textContent = "Sign In";
             } else {
                 loginForm.classList.add('hidden');
                 registerForm.classList.remove('hidden');
-                if(authTitle) authTitle.textContent = "Create an account";
             }
         };
 
@@ -900,16 +926,21 @@
         });
 
         const triggerLoginSuccess = () => {
-            document.getElementById('sidebar-name').textContent = state.user.displayName || 'User FinTrack';
-            document.getElementById('profile-page-name').textContent = state.user.displayName || 'User FinTrack';
-            document.getElementById('profile-page-email').textContent = state.user.email || 'anonim@fintrack.app';
+            const sidebarName = document.getElementById('sidebar-name');
+            const profileName = document.getElementById('profile-page-name');
+            const profileEmail = document.getElementById('profile-page-email');
             
-            document.getElementById('auth-view').classList.remove('active');
-            document.getElementById('main-view').classList.add('active');
+            if (sidebarName) sidebarName.textContent = state.user.displayName || 'User FinTrack';
+            if (profileName) profileName.textContent = state.user.displayName || 'User FinTrack';
+            if (profileEmail) profileEmail.textContent = state.user.email || 'anonim@fintrack.app';
+            
+            document.getElementById('auth-view')?.classList.remove('active');
+            document.getElementById('main-view')?.classList.add('active');
             window.navigate('dashboard');
             
             setupDataListeners(state.user.uid);
-            document.getElementById('tx-date').valueAsDate = new Date();
+            const txDate = document.getElementById('tx-date');
+            if (txDate) txDate.valueAsDate = new Date();
         };
 
         // Cek init token
@@ -948,8 +979,8 @@
                 state.user = null;
                 state.unsubscribers.forEach(unsub => unsub());
                 state.unsubscribers = [];
-                document.getElementById('auth-view').classList.add('active');
-                document.getElementById('main-view').classList.remove('active');
+                document.getElementById('auth-view')?.classList.add('active');
+                document.getElementById('main-view')?.classList.remove('active');
             }
             setTimeout(() => { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 300); }, 500);
         });
@@ -1010,6 +1041,31 @@
                 }
             }
         });
+
+        window.loginWithGoogle = async () => {
+            if (isMockMode) {
+                state.user = { uid: 'demo-google-uid', displayName: 'Google User', email: 'google@demo.com' };
+                window.showToast("Berhasil masuk dengan Google (Mode Demo)");
+                triggerLoginSuccess();
+                return;
+            }
+            const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({
+                prompt: 'select_account'
+            });
+            try {
+                const result = await signInWithPopup(auth, provider);
+                // Also create/update user profile doc
+                await setDoc(doc(db, 'artifacts', appId, 'users', result.user.uid, 'profile', 'data'), {
+                    name: result.user.displayName, email: result.user.email, lastLogin: Date.now()
+                }, { merge: true });
+                window.showToast("Berhasil masuk dengan Google!");
+            } catch (error) {
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    window.showToast("Google login gagal: " + error.message, "error");
+                }
+            }
+        };
 
         window.handleLogout = () => {
             if(isMockMode) {
